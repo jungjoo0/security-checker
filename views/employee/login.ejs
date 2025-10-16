@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구성원 로그인</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="mobile-page">
+  <div class="mobile-container">
+    <div class="login-box">
+      <h1>📱 구성원 로그인</h1>
+      <p class="subtitle">사번을 입력하세요</p>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="employee_id">사번</label>
+          <input 
+            type="text" 
+            id="employee_id" 
+            name="employee_id" 
+            placeholder="예: 1104100" 
+            required
+            pattern="[0-9]+"
+            inputmode="numeric"
+          >
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block">로그인</button>
+      </form>
+      
+      <div class="back-link">
+        <a href="/">← 메인으로 돌아가기</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const employee_id = document.getElementById('employee_id').value;
+      
+      try {
+        const response = await fetch('/employee/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ employee_id }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          window.location.href = data.redirect;
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        alert('로그인 중 오류가 발생했습니다.');
+      }
+    });
+  </script>
+</body>
+</html>

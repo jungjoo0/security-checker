@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 대시보드</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <div>
+        <h1>💼 관리자 대시보드</h1>
+        <p class="admin-info">
+          <%= user.name %> 님 | <%= user.center_team || user.division || '전체' %>
+        </p>
+      </div>
+      <div class="header-actions">
+        <a href="/logout" class="btn btn-secondary">로그아웃</a>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="action-bar">
+        <div class="date-filter">
+          <h2>📊 보안 체크 현황</h2>
+          <div class="date-selector">
+            <label for="dateSelect">조회 날짜:</label>
+            <input type="date" id="dateSelect" value="<%= selectedDate %>" onchange="changeDate()">
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button onclick="showUploadModal('employee')" class="btn btn-outline">
+            📤 구성원 업로드
+          </button>
+          <button onclick="showUploadModal('admin')" class="btn btn-outline">
+            📤 관리자 업로드
+          </button>
+          <a href="/admin/download-excel" class="btn btn-primary">
+            📥 누적 데이터 다운로드
+          </a>
+        </div>
+      </div>
+
+      <div class="stats-summary">
+        <div class="stat-card">
+          <div class="stat-number"><%= employees.length %></div>
+          <div class="stat-label">전체 인원</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-number"><%= employees.filter(e => e.today_status === '완료').length %></div>
+          <div class="stat-label">체크 완료</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-number"><%= employees.filter(e => e.today_status === '미완료').length %></div>
+          <div class="stat-label">미완료</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>사번</th>
+              <th>이름</th>
+              <th>직군</th>
+              <th>본부</th>
+              <th>센터/팀</th>
+              <th>그룹</th>
+              <th>실</th>
+              <th>금일 체크</th>
+              <th>체크 시간</th>
+              <th>누적 횟수</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (employees.length === 0) { %>
+              <tr>
+                <td colspan="10" style="text-align: center; padding: 40px;">
+                  등록된 구성원이 없습니다.<br>
+                  구성원 엑셀 파일을 업로드해주세요.
+                </td>
+              </tr>
+            <% } else { %>
+              <% employees.forEach(emp => { %>
+                <tr>
+                  <td><%= emp.employee_id %></td>
+                  <td><%= emp.name %></td>
+                  <td><%= emp.job_type || '-' %></td>
+                  <td><%= emp.division || '-' %></td>
+                  <td><%= emp.center_team || '-' %></td>
+                  <td><%= emp.group_name || '-' %></td>
+                  <td><%= emp.department || '-' %></td>
+                  <td>
+                    <span class="status-badge <%= emp.today_status === '완료' ? 'completed' : 'pending' %>">
+                      <%= emp.today_status %>
+                    </span>
+                  </td>
+                  <td><%= emp.check_time || '-' %></td>
+                  <td><%= emp.total_checks %>회</td>
+                </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 업로드 모달 -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeUploadModal()">&times;</span>
+      <h2 id="modalTitle">파일 업로드</h2>
+      <p id="modalDescription"></p>
+      
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="file">엑셀 파일 선택</label>
+          <input type="file" id="file" name="file" accept=".xlsx, .xls" required>
+        </div>
+        
+        <div class="file-format-info">
+          <strong>📋 엑셀 파일 형식:</strong>
+          <ul>
+            <li>사번</li>
+            <li>이름</li>
+            <li>직군</li>
+            <li>본부</li>
+            <li>센터/팀</li>
+            <li>그룹</li>
+            <li>실</li>
+          </ul>
+          <small>* 첫 번째 행이 헤더여야 합니다.</small>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block">업로드</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let uploadType = '';
+    
+    function changeDate() {
+      const selectedDate = document.getElementById('dateSelect').value;
+      window.location.href = '/admin/dashboard?date=' + selectedDate;
+    }
+    
+    function showUploadModal(type) {
+      uploadType = type;
+      const modal = document.getElementById('uploadModal');
+      const title = document.getElementById('modalTitle');
+      const description = document.getElementById('modalDescription');
+      
+      if (type === 'employee') {
+        title.textContent = '구성원 정보 업로드';
+        description.textContent = '구성원 정보가 담긴 엑셀 파일을 업로드하세요.';
+      } else {
+        title.textContent = '관리자 정보 업로드';
+        description.textContent = '관리자 정보가 담긴 엑셀 파일을 업로드하세요. (초기 비밀번호: 1234)';
+      }
+      
+      modal.style.display = 'block';
+    }
+    
+    function closeUploadModal() {
+      document.getElementById('uploadModal').style.display = 'none';
+      document.getElementById('uploadForm').reset();
+    }
+    
+    window.onclick = function(event) {
+      const modal = document.getElementById('uploadModal');
+      if (event.target === modal) {
+        closeUploadModal();
+      }
+    }
+    
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      const fileInput = document.getElementById('file');
+      formData.append('file', fileInput.files[0]);
+      
+      const url = uploadType === 'employee' ? '/admin/upload-employees' : '/admin/upload-admins';
+      
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          closeUploadModal();
+          location.reload();
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        alert('업로드 중 오류가 발생했습니다.');
+      }
+    });
+  </script>
+</body>
+</html>

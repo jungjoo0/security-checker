@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>보안 체크</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="mobile-page">
+  <div class="mobile-container">
+    <div class="header">
+      <div class="user-info">
+        <h2>👤 <%= user.name %> 님</h2>
+        <p>사번: <%= user.employee_id %></p>
+      </div>
+      <a href="/logout" class="logout-btn">로그아웃</a>
+    </div>
+
+    <div class="stats-box">
+      <div class="stat-item">
+        <span class="stat-label">누적 체크</span>
+        <span class="stat-value"><%= totalChecks %>회</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">오늘 체크</span>
+        <span class="stat-value <%= todayRecord ? 'completed' : 'pending' %>">
+          <%= todayRecord ? '완료' : '미완료' %>
+        </span>
+      </div>
+    </div>
+
+    <% if (todayRecord) { %>
+      <div class="alert alert-success">
+        <h3>✅ 오늘의 보안 체크 완료!</h3>
+        <p>체크 시간: <%= todayRecord.check_time %></p>
+        <p>내일 다시 체크해주세요.</p>
+      </div>
+    <% } else { %>
+      <div class="checklist-box">
+        <h2>🔒 보안 점검 체크리스트</h2>
+        <p class="checklist-subtitle">업무 종료 후 다음 사항을 확인해주세요</p>
+        
+        <form id="checklistForm">
+          <div class="checklist-item">
+            <input type="checkbox" id="check1" name="pc_shutdown" value="1">
+            <label for="check1">
+              <span class="check-icon">💻</span>
+              <span class="check-text">PC 전원을 종료 하였습니까?</span>
+            </label>
+          </div>
+          
+          <div class="checklist-item">
+            <input type="checkbox" id="check2" name="lock_check" value="1">
+            <label for="check2">
+              <span class="check-icon">🔐</span>
+              <span class="check-text">잠금 장치(캐비닛/서랍장) 시건을 하였습니까?</span>
+            </label>
+          </div>
+          
+          <div class="checklist-item">
+            <input type="checkbox" id="check3" name="document_security" value="1">
+            <label for="check3">
+              <span class="check-icon">📄</span>
+              <span class="check-text">개인정보 및 대외비 자료 보관/시건을 하였습니까?</span>
+            </label>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-block" id="saveBtn" disabled>
+            저장하기
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    const form = document.getElementById('checklistForm');
+    const saveBtn = document.getElementById('saveBtn');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    
+    if (form) {
+      // 모든 체크박스가 선택되었는지 확인
+      function updateSaveButton() {
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        saveBtn.disabled = !allChecked;
+      }
+      
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateSaveButton);
+      });
+      
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        if (!allChecked) {
+          alert('모든 항목을 체크해주세요.');
+          return;
+        }
+        
+        const formData = {
+          pc_shutdown: document.getElementById('check1').checked ? 1 : 0,
+          lock_check: document.getElementById('check2').checked ? 1 : 0,
+          document_security: document.getElementById('check3').checked ? 1 : 0,
+        };
+        
+        try {
+          const response = await fetch('/employee/save-check', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            alert(data.message);
+            location.reload();
+          } else {
+            alert(data.message);
+          }
+        } catch (error) {
+          alert('저장 중 오류가 발생했습니다.');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
