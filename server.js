@@ -306,17 +306,83 @@ app.get('/admin/dashboard', async (req, res) => {
     const params = [selectedDate];
     let paramIndex = 2;
     
-    // 슈퍼 관리자(admin)가 아닌 경우에만 소속 필터링
+    // 슈퍼 관리자(admin), 대표이사, 보안담당이 아닌 경우 직책에 따른 권한 필터링
     if (admin.employee_id !== 'admin') {
-      if (admin.division && admin.division !== '전체') {
-        query += ` AND e.division = $${paramIndex}`;
-        params.push(admin.division);
-        paramIndex++;
+      const jobType = admin.job_type || '';
+      
+      // 대표이사 또는 보안담당: 전체 조회 가능 (필터링 없음)
+      if (jobType.includes('대표이사') || jobType.includes('보안담당')) {
+        // 필터링 없이 전체 조회
       }
-      if (admin.center_team && admin.center_team !== '전체') {
-        query += ` AND e.center_team = $${paramIndex}`;
-        params.push(admin.center_team);
-        paramIndex++;
+      // 본부장: 본부 기준 필터링
+      else if (jobType.includes('본부장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+      }
+      // 센터장 또는 팀장: 센터/팀 기준 필터링
+      else if (jobType.includes('센터장') || jobType.includes('팀장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+      }
+      // 그룹장: 그룹 기준 필터링 (그룹이 비어있으면 센터/팀까지)
+      else if (jobType.includes('그룹장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+        if (admin.group_name && admin.group_name !== '전체' && admin.group_name.trim() !== '') {
+          query += ` AND e.group_name = $${paramIndex}`;
+          params.push(admin.group_name);
+          paramIndex++;
+        }
+      }
+      // 실장: 실 기준 필터링 (실이 비어있으면 센터/팀까지)
+      else if (jobType.includes('실장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+        if (admin.department && admin.department !== '전체' && admin.department.trim() !== '') {
+          query += ` AND e.department = $${paramIndex}`;
+          params.push(admin.department);
+          paramIndex++;
+        }
+      }
+      // 기타 직책: 기본적으로 센터/팀까지만 조회
+      else {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
       }
     }
     
@@ -364,17 +430,83 @@ app.get('/admin/download-excel', async (req, res) => {
     const params = [];
     let paramIndex = 1;
     
-    // 슈퍼 관리자(admin)가 아닌 경우에만 소속 필터링
+    // 슈퍼 관리자(admin), 대표이사, 보안담당이 아닌 경우 직책에 따른 권한 필터링
     if (admin.employee_id !== 'admin') {
-      if (admin.division && admin.division !== '전체') {
-        query += ` AND e.division = $${paramIndex}`;
-        params.push(admin.division);
-        paramIndex++;
+      const jobType = admin.job_type || '';
+      
+      // 대표이사 또는 보안담당: 전체 조회 가능 (필터링 없음)
+      if (jobType.includes('대표이사') || jobType.includes('보안담당')) {
+        // 필터링 없이 전체 조회
       }
-      if (admin.center_team && admin.center_team !== '전체') {
-        query += ` AND e.center_team = $${paramIndex}`;
-        params.push(admin.center_team);
-        paramIndex++;
+      // 본부장: 본부 기준 필터링
+      else if (jobType.includes('본부장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+      }
+      // 센터장 또는 팀장: 센터/팀 기준 필터링
+      else if (jobType.includes('센터장') || jobType.includes('팀장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+      }
+      // 그룹장: 그룹 기준 필터링 (그룹이 비어있으면 센터/팀까지)
+      else if (jobType.includes('그룹장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+        if (admin.group_name && admin.group_name !== '전체' && admin.group_name.trim() !== '') {
+          query += ` AND e.group_name = $${paramIndex}`;
+          params.push(admin.group_name);
+          paramIndex++;
+        }
+      }
+      // 실장: 실 기준 필터링 (실이 비어있으면 센터/팀까지)
+      else if (jobType.includes('실장')) {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
+        if (admin.department && admin.department !== '전체' && admin.department.trim() !== '') {
+          query += ` AND e.department = $${paramIndex}`;
+          params.push(admin.department);
+          paramIndex++;
+        }
+      }
+      // 기타 직책: 기본적으로 센터/팀까지만 조회
+      else {
+        if (admin.division && admin.division !== '전체') {
+          query += ` AND e.division = $${paramIndex}`;
+          params.push(admin.division);
+          paramIndex++;
+        }
+        if (admin.center_team && admin.center_team !== '전체') {
+          query += ` AND e.center_team = $${paramIndex}`;
+          params.push(admin.center_team);
+          paramIndex++;
+        }
       }
     }
     
