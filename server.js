@@ -307,15 +307,14 @@ app.get('/admin/dashboard', async (req, res) => {
     let paramIndex = 2;
     
     // 슈퍼 관리자(admin), 대표이사, 보안담당이 아닌 경우 직책에 따른 권한 필터링
-    if (admin.employee_id !== 'admin') {
-      const jobType = admin.job_type || '';
-      
-      // 대표이사 또는 보안담당: 전체 조회 가능 (필터링 없음)
-      if (jobType.includes('대표이사') || jobType.includes('보안담당')) {
-        // 필터링 없이 전체 조회
-      }
+    const jobType = admin.job_type || '';
+    const isFullAccess = admin.employee_id === 'admin' || 
+                        jobType.includes('대표이사') || 
+                        jobType.includes('보안담당');
+    
+    if (!isFullAccess) {
       // 본부장: 본부 기준 필터링
-      else if (jobType.includes('본부장')) {
+      if (jobType.includes('본부장')) {
         if (admin.division && admin.division !== '전체') {
           query += ` AND e.division = $${paramIndex}`;
           params.push(admin.division);
@@ -431,15 +430,14 @@ app.get('/admin/download-excel', async (req, res) => {
     let paramIndex = 1;
     
     // 슈퍼 관리자(admin), 대표이사, 보안담당이 아닌 경우 직책에 따른 권한 필터링
-    if (admin.employee_id !== 'admin') {
-      const jobType = admin.job_type || '';
-      
-      // 대표이사 또는 보안담당: 전체 조회 가능 (필터링 없음)
-      if (jobType.includes('대표이사') || jobType.includes('보안담당')) {
-        // 필터링 없이 전체 조회
-      }
+    const jobType = admin.job_type || '';
+    const isFullAccess = admin.employee_id === 'admin' || 
+                        jobType.includes('대표이사') || 
+                        jobType.includes('보안담당');
+    
+    if (!isFullAccess) {
       // 본부장: 본부 기준 필터링
-      else if (jobType.includes('본부장')) {
+      if (jobType.includes('본부장')) {
         if (admin.division && admin.division !== '전체') {
           query += ` AND e.division = $${paramIndex}`;
           params.push(admin.division);
