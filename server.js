@@ -7,6 +7,7 @@ const multer = require('multer');
 const xlsx = require('xlsx');
 const cron = require('node-cron');
 
+// 서비스에이스 보안점검 시스템
 const app = express();
 const PORT = process.env.PORT || 3000;
 
