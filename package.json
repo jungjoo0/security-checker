@@ -10,18 +10,22 @@
   "engines": {
     "node": "18.x"
   },
-  "keywords": ["security", "check", "webapp"],
+  "keywords": [
+    "security",
+    "check",
+    "webapp"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
     "body-parser": "^1.20.2",
-    "multer": "^1.4.5-lts.1",
-    "xlsx": "^0.18.5",
     "ejs": "^3.1.9",
+    "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "node-cron": "^3.0.3"
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "pg": "^8.16.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
