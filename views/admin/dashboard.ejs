@@ -30,12 +30,14 @@
           </div>
         </div>
         <div class="action-buttons">
-          <button onclick="showUploadModal('employee')" class="btn btn-outline">
-            📤 구성원 업로드
-          </button>
-          <button onclick="showUploadModal('admin')" class="btn btn-outline">
-            📤 관리자 업로드
-          </button>
+          <% if (user.employee_id === 'admin') { %>
+            <button onclick="showUploadModal('employee')" class="btn btn-outline">
+              📤 구성원 업로드
+            </button>
+            <button onclick="showUploadModal('admin')" class="btn btn-outline">
+              📤 관리자 업로드
+            </button>
+          <% } %>
           <a href="/admin/download-excel" class="btn btn-primary">
             📥 누적 데이터 다운로드
           </a>
