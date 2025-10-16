@@ -154,7 +154,9 @@ app.get('/employee/dashboard', (req, res) => {
   }
   
   const employee_id = req.session.user.employee_id;
-  const today = new Date().toISOString().split('T')[0];
+  // 한국 시간(KST) 기준
+  const nowKST = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
+  const today = nowKST.toISOString().split('T')[0];
   
   // 오늘 체크 기록 조회
   db.get(
@@ -194,15 +196,19 @@ app.post('/employee/save-check', (req, res) => {
   }
   
   const employee_id = req.session.user.employee_id;
-  const today = new Date().toISOString().split('T')[0];
+  
+  // 한국 시간(KST) 기준으로 날짜와 시간 생성
+  const nowKST = new Date(new Date().getTime() + (9 * 60 * 60 * 1000)); // UTC + 9시간
+  const today = nowKST.toISOString().split('T')[0];
+  
   // 년월일시분 형식으로 저장 (202510161415)
-  const nowDate = new Date();
   const checkDateTime = 
-    nowDate.getFullYear() + 
-    String(nowDate.getMonth() + 1).padStart(2, '0') + 
-    String(nowDate.getDate()).padStart(2, '0') + 
-    String(nowDate.getHours()).padStart(2, '0') + 
-    String(nowDate.getMinutes()).padStart(2, '0');
+    nowKST.getUTCFullYear() + 
+    String(nowKST.getUTCMonth() + 1).padStart(2, '0') + 
+    String(nowKST.getUTCDate()).padStart(2, '0') + 
+    String(nowKST.getUTCHours()).padStart(2, '0') + 
+    String(nowKST.getUTCMinutes()).padStart(2, '0');
+  
   const { pc_shutdown, lock_check, document_security } = req.body;
   
   // 모든 항목이 체크되었는지 확인
@@ -282,7 +288,9 @@ app.get('/admin/dashboard', (req, res) => {
   }
   
   const admin = req.session.user;
-  const today = new Date().toISOString().split('T')[0];
+  // 한국 시간(KST) 기준
+  const nowKST = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
+  const today = nowKST.toISOString().split('T')[0];
   const selectedDate = req.query.date || today; // 쿼리 파라미터로 날짜 받기
   
   // 같은 소속의 구성원 조회 (센터/팀 기준)
@@ -381,13 +389,14 @@ app.get('/admin/download-excel', (req, res) => {
     
     const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
     
-    const nowDate = new Date();
+    // 한국 시간(KST) 기준 타임스탬프
+    const nowKST = new Date(new Date().getTime() + (9 * 60 * 60 * 1000));
     const timestamp = 
-      nowDate.getFullYear() + 
-      String(nowDate.getMonth() + 1).padStart(2, '0') + 
-      String(nowDate.getDate()).padStart(2, '0') + 
-      String(nowDate.getHours()).padStart(2, '0') + 
-      String(nowDate.getMinutes()).padStart(2, '0');
+      nowKST.getUTCFullYear() + 
+      String(nowKST.getUTCMonth() + 1).padStart(2, '0') + 
+      String(nowKST.getUTCDate()).padStart(2, '0') + 
+      String(nowKST.getUTCHours()).padStart(2, '0') + 
+      String(nowKST.getUTCMinutes()).padStart(2, '0');
     
     res.setHeader('Content-Disposition', `attachment; filename=security_check_all_${timestamp}.xlsx`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
