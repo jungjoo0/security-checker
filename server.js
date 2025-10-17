@@ -14,13 +14,17 @@ const PORT = process.env.PORT || 3000;
 // PostgreSQL 연결 설정
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  max: 20, // 최대 연결 수
+  idleTimeoutMillis: 30000, // 유휴 연결 타임아웃
+  connectionTimeoutMillis: 10000, // 연결 타임아웃
 });
 
 // 데이터베이스 연결 확인
 pool.connect((err, client, release) => {
   if (err) {
-    console.error('데이터베이스 연결 오류:', err.message);
+    console.error('❌ 데이터베이스 연결 오류:', err.message);
+    console.error('전체 오류:', err);
   } else {
     console.log('✅ PostgreSQL 데이터베이스에 연결되었습니다.');
     release();
@@ -28,6 +32,10 @@ pool.connect((err, client, release) => {
   }
 });
 
+// 데이터베이스 연결 오류 처리
+pool.on('error', (err, client) => {
+  console.error('❌ 예상치 못한 데이터베이스 오류:', err);
+});
 // 데이터베이스 테이블 생성
 async function initDatabase() {
   try {
@@ -103,12 +111,13 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(session({
-  secret: 'security-checker-secret-key-2025',
+  secret: process.env.SESSION_SECRET || 'security-checker-secret-key-2025',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false,
-    maxAge: 24 * 60 * 60 * 1000 // 24시간
+    secure: process.env.NODE_ENV === 'production' ? false : false, // HTTPS를 사용하면 true로 변경
+    maxAge: 24 * 60 * 60 * 1000, // 24시간
+    httpOnly: true
   }
 }));
 
@@ -625,9 +634,19 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// 헬스 체크 엔드포인트
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
+  console.log('========================================');
+  console.log('🚀 서비스에이스 보안점검 시스템 시작');
+  console.log(`📍 포트: ${PORT}`);
+  console.log(`🌍 환경: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📅 시작 시간: ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}`);
+  console.log('========================================');
   console.log(`구성원 페이지: http://localhost:${PORT}/employee/login`);
   console.log(`관리자 페이지: http://localhost:${PORT}/admin/login`);
 });
