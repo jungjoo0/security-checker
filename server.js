@@ -266,6 +266,7 @@ app.post('/admin/login', async (req, res) => {
     req.session.user = {
       employee_id: row.employee_id,
       name: row.name,
+      job_type: row.job_type,
       division: row.division,
       center_team: row.center_team,
       group_name: row.group_name,
